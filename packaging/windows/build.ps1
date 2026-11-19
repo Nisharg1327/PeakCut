@@ -28,8 +28,10 @@ Invoke-WebRequest "https://github.com/denoland/deno/releases/latest/download/den
 New-Item -ItemType Directory -Force dist\PeakCut\deno | Out-Null
 Expand-Archive $dn -DestinationPath dist\PeakCut\deno -Force
 
-$iscc = @("$env:ProgramFiles(x86)\Inno Setup 6\ISCC.exe", "$env:ProgramFiles\Inno Setup 6\ISCC.exe", "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe") |
+$pf86 = ${env:ProgramFiles(x86)}
+$iscc = @("$pf86\Inno Setup 6\ISCC.exe", "$env:ProgramFiles\Inno Setup 6\ISCC.exe", "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe") |
         Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not $iscc) { $cmd = Get-Command ISCC.exe -ErrorAction SilentlyContinue; if ($cmd) { $iscc = $cmd.Source } }
 if (-not $iscc) { throw "Inno Setup 6 was not found. Install it from https://jrsoftware.org/isdl.php" }
 & $iscc "/DAppVersion=$Version" packaging\windows\installer.iss
 Write-Host "`nDone: installer-output\PeakCut-Setup.exe"
